@@ -1,93 +1,86 @@
-import { useState, useEffect } from 'react'
-import Note from './components/Note'
-import Notification from './components/Notification'
-import Footer from './components/Footer'
-import noteService from './services/notes'
+import { useState, useEffect } from "react";
+import Note from "./components/Note";
+import Notification from "./components/Notification";
+import Footer from "./components/Footer";
+import noteService from "./services/notes";
+
+import data from "./services/notes";
 
 const App = () => {
-  const [notes, setNotes] = useState([])
-  const [newNote, setNewNote] = useState('')
-  const [showAll, setShowAll] = useState(true)
-  const [errorMessage, setErrorMessage] = useState(null)
+  const [contacts, setContacts] = useState([]);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    number: "",
+  });
 
   useEffect(() => {
-    noteService
-      .getAll()
-      .then(initialNotes => {
-        setNotes(initialNotes)
-      })
-  }, [])
+    const fetchContacts = async () => {
+      try {
+        const contactsData = await data.getAll();
+        setContacts(contactsData.data);
+        // console.log(contacts);
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
+      }
+    };
 
-  const addNote = (event) => {
-    event.preventDefault()
-    const noteObject = {
-      content: newNote,
-      important: Math.random() > 0.5,
+    fetchContacts();
+  }, []);
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({
+      ...formData,
+      [name]: value, // Actualiza el valor del campo correspondiente
+    });
+  };
+
+  async function handleSubmit() {
+    event.preventDefault();
+    // console.log(formData);
+
+    try {
+      const res = await data.create(formData);
+
+      console.log(res);
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
     }
-  
-    noteService
-      .create(noteObject)
-        .then(returnedNote => {
-        setNotes(notes.concat(returnedNote))
-        setNewNote('')
-      })
   }
 
-  const toggleImportanceOf = id => {
-    const note = notes.find(n => n.id === id)
-    const changedNote = { ...note, important: !note.important }
-  
-    noteService
-      .update(id, changedNote)
-        .then(returnedNote => {
-        setNotes(notes.map(note => note.id !== id ? note : returnedNote))
-      })
-      .catch(error => {
-        setErrorMessage(
-          `Note '${note.content}' was already removed from server`
-        )
-        setTimeout(() => {
-          setErrorMessage(null)
-        }, 5000)
-      })
-  }
-
-  const handleNoteChange = (event) => {
-    setNewNote(event.target.value)
-  }
-
-  const notesToShow = showAll
-    ? notes
-    : notes.filter(note => note.important)
-
+  // console.log(contacts);
   return (
     <div>
-      <h1>Notes</h1>
-      <Notification message={errorMessage} />
-      <div>
-        <button onClick={() => setShowAll(!showAll)}>
-          show {showAll ? 'important' : 'all' }
-        </button>
-      </div>      
-      <ul>
-        {notesToShow.map(note => 
-          <Note
-            key={note.id}
-            note={note}
-            toggleImportance={() => toggleImportanceOf(note.id)}
-          />
-        )}
-      </ul>
-      <form onSubmit={addNote}>
-      <input
-          value={newNote}
-          onChange={handleNoteChange}
-        />
-        <button type="submit">save</button>
-      </form>
-      <Footer />
-    </div>
-  )
-}
+      <h1>Contactos</h1>
+      <div className="">
+        {contacts.map((contact, i) => (
+          <div key={i}>
+            <h2>{contact.name}</h2>
+            <p>{contact.number}</p>
+          </div>
+        ))}
+      </div>
 
-export default App
+      <form action="" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Nombre"
+          name="name"
+          onChange={handleInputChange}
+          value={formData.name}
+        />
+        <input
+          type="text"
+          name="number"
+          placeholder="numero"
+          onChange={handleInputChange}
+          value={formData.number}
+        />
+        <button>Añadir</button>
+      </form>
+    </div>
+  );
+};
+
+export default App;
