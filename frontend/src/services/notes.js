@@ -1,5 +1,6 @@
 import axios from 'axios'
 const url=import.meta.env.VITE_BACKEND_URL || "http://localhost:3001"
+// const url="http://localhost:3001"
 const baseUrl = `${url}/api/contact`
 
 const getAll = async () => {

@@ -43,6 +43,8 @@ const App = () => {
     try {
       const res = await data.create(formData);
 
+      console.log(formData)
+      setContacts([ ...contacts,formData]);
       console.log(res);
     } catch (error) {
       console.error("Error fetching contacts:", error);
